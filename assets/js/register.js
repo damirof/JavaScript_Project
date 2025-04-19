@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (!termsCheck) {
-            showToast('You must agree to the terms and conditions', true);
+            showToast('You must agree to the terms and conditions ', true);
             return;
         }
         
