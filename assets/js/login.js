@@ -1,34 +1,49 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.querySelector("#loginForm");
+    let loginForm = document.querySelector("#loginForm");
     
     if (localStorage.getItem('isLoggedIn') === 'true') {
-        redirectToDashboard();
+       
     }
     
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const email = document.querySelector("#email").value;
-        const password = document.querySelector("#password").value;
+        let email = document.querySelector("#email").value.trim();
+        let password = document.querySelector("#password").value;
         
         if (!email || !password) {
-            toastr.error('Please enter both email and password');
+            showToast("Please enter both email and password", true);
             return;
         }
         
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u => u.email === email && u.password === password);
+        if (!email.includes('@') || !email.includes('.')) {
+            showToast("Please enter a valid email address", true);
+            return;
+        }
+        
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let user = users.find(u => u.email === email && u.password === password);
         
         if (user) {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('currentUser', JSON.stringify(user));
-            redirectToDashboard();
+            window.location.href = 'index.html';
         } else {
-            toastr.error('Invalid email or password');
+            showToast('Invalid email or password', true);
         }
     });
     
-    function redirectToDashboard() {
-        window.location.href = 'dashboard.html';
+    function showToast(text, isError = false) {
+        Toastify({
+            text: text,
+            duration: 2000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: isError 
+                    ? "linear-gradient(to right, #ff5f6d, #ffc371)" 
+                    : "linear-gradient(to right, #00b09b, #96c93d)",
+            },
+        }).showToast();
     }
 });

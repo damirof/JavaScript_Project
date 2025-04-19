@@ -1,47 +1,51 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const registerForm = document.querySelector('#registerForm');
-    const passwordInput = document.querySelector('#password');
-    const confirmPasswordInput = document.querySelector('#confirmPassword');
-    const termsCheck = document.querySelector('#termsCheck');
+    let registerForm = document.querySelector('#registerForm');
+    let passwordInput = document.querySelector('#password');
+    let confirmPasswordInput = document.querySelector('#confirmPassword');
     
     registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const fullName = document.querySelector('#fullName').value.trim();
-        const email = document.querySelector('#email').value.trim();
-        const password = passwordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
-        
+        let fullName = document.querySelector('#fullName').value.trim();
+        let email = document.querySelector('#email').value.trim();
+        let password = passwordInput.value;
+        let confirmPassword = confirmPasswordInput.value;
+        let termsCheck = document.querySelector('#termsCheck').checked;
 
         if (!fullName || !email || !password || !confirmPassword) {
-            toastr.error('Please fill in all fields');
+            showToast('Please fill in all fields', true);
             return;
         }
         
         if (password !== confirmPassword) {
-            toastr.error('Passwords do not match');
+            showToast('Passwords do not match', true);
             return;
         }
         
         if (password.length < 6) {
-            toastr.error('Password must be at least 6 characters');
+            showToast('Password must be at least 6 characters', true);
             return;
         }
         
-        if (!termsCheck.checked) {
-            toastr.error('You must agree to the terms and conditions');
+        if (!termsCheck) {
+            showToast('You must agree to the terms and conditions', true);
             return;
         }
         
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const userExists = users.some(user => user.email === email);
+        if (!email.includes('@') || !email.includes('.')) {
+            showToast('Please enter a valid email address', true);
+            return;
+        }
+        
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let userExists = users.some(user => user.email === email);
         
         if (userExists) {
-            toastr.error('Email already registered');
+            showToast('Email already registered', true);
             return;
         }
         
-        const newUser = {
+        let newUser = {
             id: Date.now(),
             name: fullName,
             email: email,
@@ -51,17 +55,23 @@ document.addEventListener('DOMContentLoaded', function() {
         users.push(newUser);
         localStorage.setItem('users', JSON.stringify(users));
         
-        toastr.success('Registration successful!');
+        showToast("Registration successful!");
         setTimeout(() => {
             window.location.href = 'login.html';
         }, 1500);
     });
     
-    confirmPasswordInput.addEventListener('input', function() {
-        if (passwordInput.value !== confirmPasswordInput.value) {
-            confirmPasswordInput.style.borderColor = '#dc3545';
-        } else {
-            confirmPasswordInput.style.borderColor = '#ced4da';
-        }
-    });
+    function showToast(text, isError = false) {
+        Toastify({
+            text: text,
+            duration: 1500,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: isError 
+                    ? "linear-gradient(to right, #ff5f6d, #ffc371)" 
+                    : "linear-gradient(to right, #00b09b, #96c93d)",
+            },
+        }).showToast();
+    }
 });
