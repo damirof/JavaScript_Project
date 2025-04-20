@@ -1,26 +1,58 @@
 {
-    "şərhlər": [
+    "products": [
+      {
+        "id": 1,
+        "name": "Shoulder Bag Leather",
+        "description": "Leather undertakes laborious physical work",
+        "price": 130,
+        "originalPrice": 340,
+        "tag": "New",
+        "image": "./assets/images/bag1.png"
+      },
+      {
+        "id": 2,
+        "name": "Backpack Travel",
+        "description": "Durable travel backpack",
+        "price": 89,
+        "originalPrice": 120,
+        "tag": "30x",
+        "image":"./assets/images/bag2.png"
+      },
+      {
+        "id": 3,
+        "name": "Wallet Leather",
+        "description": "Genuine leather wallet",
+        "price": 45,
+        "originalPrice": 60,
+        "tag": "30x",
+        "image": "./assets/images/bag3.png"
+      },
+      {
+        "id": 4,
+        "name": "Shoulder Bag Leather",
+        "description": "Shoulder Bag Leather Bag Leather ",
+        "price": 130,
+        "originalPrice": 340,
+        "tag": "New",
+        "image":"./assets/images/bag4.png"
+      },
         {
-            "id": 1,
-            "body": "Əla yazi!",
-            "postID": 1
+            "id": 5,
+            "name": "Backpack Travel",
+            "description": "Durable travel backpack",
+            "price": 89,
+            "originalPrice": 120,
+            "tag": "30x",
+            "image": "./assets/images/bag5.png"
         },
         {
-            "id": 2,
-            "body": "Məlumatlandirici!",
-            "postID": 2
-        }
-    ],
-    "yazilar": [
-        {
-            "id": 1,
-            "title": "JSON-Server",
-            "müəllif": "Amit"
-        },
-        {
-            "id": 2,
-            "title": "Node.js",
-            "müəllif": "Mohit"
+            "id": 6,
+            "name": "Wallet Leather",
+            "description": "Genuine leather wallet",
+            "price": 45,
+            "originalPrice": 60,
+            "tag": "30x",
+            "image": "./assets/images/bag6.png"
         }
     ]
-}
+  }
