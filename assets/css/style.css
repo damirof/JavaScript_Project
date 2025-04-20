@@ -65,6 +65,8 @@ body {
 }
 
 .product-card {
+    width:360px;
+    height: 508px;
     transition: transform 0.3s ease;
 }
 
@@ -74,11 +76,21 @@ body {
 }
 
 .product-image {
-    height: 250px;
+    margin: 30px;
+    max-width:300px;
+    height: 230px;
     object-fit: cover;
+}
+.add-to-cart{
+    margin-top: 20px;
+    background-color: white;
+    color: #000000;
+    width: 312px;
+    height: 48px;
 }
 
 .cart-count {
+    
     background: red;
     color: white;
     border-radius: 50%;

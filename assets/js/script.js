@@ -1,14 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const productsContainer = document.getElementById('productsContainer');
-    const searchInput = document.getElementById('searchInput');
-    const sortSelect = document.getElementById('sortSelect');
-    const cartCount = document.querySelector('.cart-count');
+    let productsContainer = document.getElementById('productsContainer');
+    let searchInput = document.getElementById('searchInput');
+    let sortSelect = document.getElementById('sortSelect');
+    let cartCount = document.querySelector('.cart-count');
     
     let products = [];
     let filteredProducts = [];
 
     function updateCartCount() {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
         cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
     }
 
@@ -33,34 +33,72 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         filteredProducts.forEach(product => {
-            const col = document.createElement('div');
+            let col = document.createElement('div');
             col.className = 'col-md-4 mb-4';
-            col.innerHTML = `
-                <div class="card h-100 product-card">
-                    ${product.discount ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2">${product.discount}% OFF</span>` : ''}
-                    <img src="assets/images/${product.images[0]}" class="card-img-top product-image" alt="${product.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${product.name}</h5>
-                        <p class="card-text">${product.description}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="fw-bold">$${product.price.toFixed(2)}</span>
-                                ${product.originalPrice ? `<small class="text-muted text-decoration-line-through ms-2">$${product.originalPrice.toFixed(2)}</small>` : ''}
-                            </div>
-                            <button class="btn btn-dark add-to-cart" data-id="${product.id}">Add to Cart</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            productsContainer.appendChild(col);
-        });
 
-        document.querySelectorAll('.add-to-cart').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const productId = parseInt(this.dataset.id);
-                const product = products.find(p => p.id === productId);
+            let card = document.createElement('div');
+            card.className = 'card h-100 product-card';
+
+            if (product.tag) {
+                let tagBadge = document.createElement('span');
+                tagBadge.className = 'badge bg-danger position-absolute top-0 end-0 m-2';
+                tagBadge.textContent = product.tag;
+                card.appendChild(tagBadge);
+            }
+
+            let img = document.createElement('img');
+            img.className = 'card-img-top product-image';
+            img.src = product.image;
+            img.alt = product.name;
+            card.appendChild(img);
+
+            let cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+
+            let title = document.createElement('h5');
+            title.className = 'card-title';
+            title.textContent = product.name;
+            cardBody.appendChild(title);
+
+            let description = document.createElement('p');
+            description.className = 'card-text';
+            description.textContent = product.description;
+            cardBody.appendChild(description);
+
+            let priceContainer = document.createElement('div');
+        
+
+            let priceDiv = document.createElement('div');
+            let currentPrice = document.createElement('span');
+            currentPrice.className = 'fw-bold';
+            currentPrice.textContent = `$${product.price.toFixed(2)}`;
+            priceDiv.appendChild(currentPrice);
+
+            if (product.originalPrice) {
+                let originalPrice = document.createElement('small');
+                originalPrice.className = 'text-muted text-decoration-line-through ms-2';
+                originalPrice.textContent = `$${product.originalPrice.toFixed(2)}`;
+                priceDiv.appendChild(originalPrice);
+            }
+
+            priceContainer.appendChild(priceDiv);
+
+            let addToCartBtn = document.createElement('button');
+            addToCartBtn.className = 'btn btn-dark add-to-cart';
+            addToCartBtn.textContent = 'Add to Cart';
+            addToCartBtn.dataset.id = product.id;
+            priceContainer.appendChild(addToCartBtn);
+
+            cardBody.appendChild(priceContainer);
+            card.appendChild(cardBody);
+            col.appendChild(card);
+            productsContainer.appendChild(col);
+
+            addToCartBtn.addEventListener('click', function() {
+                let productId = parseInt(this.dataset.id);
+                let product = products.find(p => p.id === productId);
                 let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                const existingItem = cart.find(item => item.id === productId);
+                let existingItem = cart.find(item => item.id === productId);
                 
                 if (existingItem) {
                     existingItem.quantity += 1;
@@ -69,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         id: productId,
                         name: product.name,
                         price: product.price,
-                        image: product.images[0],
+                        image: product.image,
                         quantity: 1
                     });
                 }
@@ -82,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function handleSearch() {
-        const term = searchInput.value.toLowerCase();
+        let term = searchInput.value.toLowerCase();
         filteredProducts = products.filter(product => 
             product.name.toLowerCase().includes(term) || 
             product.description.toLowerCase().includes(term)
@@ -91,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function handleSort() {
-        const value = sortSelect.value;
+        let value = sortSelect.value;
         switch(value) {
             case 'name-asc':
                 filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
@@ -113,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadProducts() {
         try {
-            const response = await fetch('http://localhost:3001/products');
+            let response = await fetch('http://localhost:3001/products');
             products = await response.json();
             filteredProducts = [...products];
             renderProducts();
