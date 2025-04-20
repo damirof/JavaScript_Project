@@ -1,0 +1,26 @@
+{
+    "şərhlər": [
+        {
+            "id": 1,
+            "body": "Əla yazi!",
+            "postID": 1
+        },
+        {
+            "id": 2,
+            "body": "Məlumatlandirici!",
+            "postID": 2
+        }
+    ],
+    "yazilar": [
+        {
+            "id": 1,
+            "title": "JSON-Server",
+            "müəllif": "Amit"
+        },
+        {
+            "id": 2,
+            "title": "Node.js",
+            "müəllif": "Mohit"
+        }
+    ]
+}
