@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const productsContainer = document.querySelector('#productsContainer');
     const searchInput = document.querySelector('#searchInput');
     const sortSelect = document.querySelector('#sortSelect');
@@ -9,45 +9,56 @@ document.addEventListener('DOMContentLoaded', function() {
     let filteredProducts = [];
 
     fetch('http://localhost:3001/products')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch products');
+            return response.json();
+        })
         .then(data => {
-            products = data;
+            products = Array.isArray(data) ? data : [];
             filteredProducts = [...products];
-            renderProducts();
+          
             updateCartCount();
+            renderProducts();
+        })
+        .catch(error => {
+            console.error('Error fetching products:', error);
+            productsContainer.innerHTML = '<p>Failed to load products. Please try again later.</p>';
         });
 
     function renderProducts() {
-    
+        productsContainer.innerHTML = '';
 
-            productsContainer.innerHTML = '';
-            
-            if (filteredProducts.length === 0) {
-                productsContainer.innerHTML = '<p>No products found</p>';
-                return;
-            }
-    
-            filteredProducts.forEach(product => {
+        if (filteredProducts.length === 0) {
+            productsContainer.innerHTML = '<p>No products found</p>';
+            return;
+        }
+
+        filteredProducts.forEach(product => {
             const productCard = document.createElement('div');
             productCard.className = 'product-card';
-         
-            const productBadgeNew = document.createElement('div');
-            productBadgeNew.className = 'product-badge';
-            productBadgeNew.textContent = 'New';
-            productCard.appendChild(productBadgeNew);
 
-            const productBadgeDiscount = document.createElement('div');
-            productBadgeDiscount.className = 'product-badge';
-            productBadgeDiscount.textContent = `${product.discount}%`;
-            productCard.appendChild(productBadgeDiscount);
+            if (product.discount) {
+                const productBadgeDiscount = document.createElement('div');
+                productBadgeDiscount.className = 'product-badge';
+                productBadgeDiscount.textContent = `${product.discount}%`;
+                productCard.appendChild(productBadgeDiscount);
+            }
 
             const productImage = document.createElement('img');
-            productImage.src = `assets/images/${product.images[0]}`;
+            productImage.src = product.images && product.images[0] ? `assets/images/${product.images[0]}` : 'assets/images/default.png';
+            productImage.alt = product.name;
             productCard.appendChild(productImage);
 
             const productName = document.createElement('h3');
             productName.textContent = product.name;
             productCard.appendChild(productName);
+
+            if (product.originalPrice) {
+                const originalPriceSpan = document.createElement('span');
+                originalPriceSpan.className = 'original-price';
+                originalPriceSpan.textContent = `From $${product.originalPrice.toFixed(2)}`;
+                productCard.appendChild(originalPriceSpan);
+            }
 
             const productDescription = document.createElement('p');
             productDescription.textContent = product.description;
@@ -55,10 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const productPrice = document.createElement('div');
             productPrice.className = 'product-price';
-            productPrice.innerHTML = `
-                $${product.price.toFixed(2)}
-                <span class="original-price">From $${product.originalPrice.toFixed(2)}</span>
-            `;
+            productPrice.textContent = `$${product.price.toFixed(2)}`;
             productCard.appendChild(productPrice);
 
             const addToCartButton = document.createElement('button');
@@ -79,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const productId = parseInt(e.target.dataset.id);
         const product = products.find(p => p.id === productId);
 
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
         const existingItem = cart.find(item => item.id === productId);
 
         if (existingItem) {
@@ -113,19 +121,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    searchInput.addEventListener('input', function() {
+    searchInput.addEventListener('input', function () {
         const searchTerm = this.value.toLowerCase();
-        filteredProducts = products.filter(product => 
-            product.name.toLowerCase().includes(searchTerm) || 
+        filteredProducts = products.filter(product =>
+            product.name.toLowerCase().includes(searchTerm) ||
             product.description.toLowerCase().includes(searchTerm)
         );
         renderProducts();
     });
 
-    sortSelect.addEventListener('change', function() {
+    sortSelect.addEventListener('change', function () {
         const value = this.value;
-        
-        switch(value) {
+
+        switch (value) {
             case 'name-asc':
                 filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
                 break;
@@ -141,7 +149,14 @@ document.addEventListener('DOMContentLoaded', function() {
             default:
                 filteredProducts = [...products];
         }
-        
+
         renderProducts();
     });
+});
+
+document.querySelectorAll('.product-card').forEach(card => {
+    const addToCartButton = card.querySelector('.add-to-cart');
+    if (addToCartButton) {
+        addToCartButton.addEventListener('click', addToCart);
+    }
 });
