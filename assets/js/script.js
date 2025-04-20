@@ -1,139 +1,98 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const productsContainer = document.querySelector('#productsContainer');
-    const searchInput = document.querySelector('#searchInput');
-    const sortSelect = document.querySelector('#sortSelect');
+document.addEventListener('DOMContentLoaded', function() {
+    const productsContainer = document.getElementById('productsContainer');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
     const cartCount = document.querySelector('.cart-count');
-    const toast = document.querySelector('#toast');
-
+    
     let products = [];
     let filteredProducts = [];
 
-    fetch('http://localhost:3001/products')
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch products');
-            return response.json();
-        })
-        .then(data => {
-            products = Array.isArray(data) ? data : [];
-            filteredProducts = [...products];
-          
-            updateCartCount();
-            renderProducts();
-        })
-        .catch(error => {
-            console.error('Error fetching products:', error);
-            productsContainer.innerHTML = '<p>Failed to load products. Please try again later.</p>';
-        });
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function showToast(message) {
+        Toastify({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: "linear-gradient(to right, #00b09b, #96c93d)",
+            },
+        }).showToast();
+    }
 
     function renderProducts() {
         productsContainer.innerHTML = '';
-
+        
         if (filteredProducts.length === 0) {
-            productsContainer.innerHTML = '<p>No products found</p>';
+            productsContainer.innerHTML = '<p class="text-center py-5">No products found</p>';
             return;
         }
 
         filteredProducts.forEach(product => {
-            const productCard = document.createElement('div');
-            productCard.className = 'product-card';
-
-            if (product.discount) {
-                const productBadgeDiscount = document.createElement('div');
-                productBadgeDiscount.className = 'product-badge';
-                productBadgeDiscount.textContent = `${product.discount}%`;
-                productCard.appendChild(productBadgeDiscount);
-            }
-
-            const productImage = document.createElement('img');
-            productImage.src = product.images && product.images[0] ? `assets/images/${product.images[0]}` : 'assets/images/default.png';
-            productImage.alt = product.name;
-            productCard.appendChild(productImage);
-
-            const productName = document.createElement('h3');
-            productName.textContent = product.name;
-            productCard.appendChild(productName);
-
-            if (product.originalPrice) {
-                const originalPriceSpan = document.createElement('span');
-                originalPriceSpan.className = 'original-price';
-                originalPriceSpan.textContent = `From $${product.originalPrice.toFixed(2)}`;
-                productCard.appendChild(originalPriceSpan);
-            }
-
-            const productDescription = document.createElement('p');
-            productDescription.textContent = product.description;
-            productCard.appendChild(productDescription);
-
-            const productPrice = document.createElement('div');
-            productPrice.className = 'product-price';
-            productPrice.textContent = `$${product.price.toFixed(2)}`;
-            productCard.appendChild(productPrice);
-
-            const addToCartButton = document.createElement('button');
-            addToCartButton.className = 'add-to-cart';
-            addToCartButton.dataset.id = product.id;
-            addToCartButton.textContent = 'Add to cart';
-            productCard.appendChild(addToCartButton);
-
-            productsContainer.appendChild(productCard);
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            col.innerHTML = `
+                <div class="card h-100 product-card">
+                    ${product.discount ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2">${product.discount}% OFF</span>` : ''}
+                    <img src="assets/images/${product.images[0]}" class="card-img-top product-image" alt="${product.name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${product.name}</h5>
+                        <p class="card-text">${product.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">$${product.price.toFixed(2)}</span>
+                                ${product.originalPrice ? `<small class="text-muted text-decoration-line-through ms-2">$${product.originalPrice.toFixed(2)}</small>` : ''}
+                            </div>
+                            <button class="btn btn-dark add-to-cart" data-id="${product.id}">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            productsContainer.appendChild(col);
         });
 
-        document.querySelectorAll('.add-to-cart').forEach(button => {
-            button.addEventListener('click', addToCart);
-        });
-    }
-
-    function addToCart(e) {
-        const productId = parseInt(e.target.dataset.id);
-        const product = products.find(p => p.id === productId);
-
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const existingItem = cart.find(item => item.id === productId);
-
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            cart.push({
-                id: productId,
-                name: product.name,
-                price: product.price,
-                image: product.images[0],
-                quantity: 1
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const productId = parseInt(this.dataset.id);
+                const product = products.find(p => p.id === productId);
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const existingItem = cart.find(item => item.id === productId);
+                
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        id: productId,
+                        name: product.name,
+                        price: product.price,
+                        image: product.images[0],
+                        quantity: 1
+                    });
+                }
+                
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartCount();
+                showToast(`${product.name} added to cart`);
             });
-        }
-
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateCartCount();
-        showToast(`${product.name} added to cart`);
+        });
     }
 
-    function updateCartCount() {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const total = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = total;
-    }
-
-    function showToast(message) {
-        toast.textContent = message;
-        toast.style.display = 'block';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
-    }
-
-    searchInput.addEventListener('input', function () {
-        const searchTerm = this.value.toLowerCase();
-        filteredProducts = products.filter(product =>
-            product.name.toLowerCase().includes(searchTerm) ||
-            product.description.toLowerCase().includes(searchTerm)
+    function handleSearch() {
+        const term = searchInput.value.toLowerCase();
+        filteredProducts = products.filter(product => 
+            product.name.toLowerCase().includes(term) || 
+            product.description.toLowerCase().includes(term)
         );
         renderProducts();
-    });
+    }
 
-    sortSelect.addEventListener('change', function () {
-        const value = this.value;
-
-        switch (value) {
+    function handleSort() {
+        const value = sortSelect.value;
+        switch(value) {
             case 'name-asc':
                 filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
                 break;
@@ -149,14 +108,24 @@ document.addEventListener('DOMContentLoaded', function () {
             default:
                 filteredProducts = [...products];
         }
-
         renderProducts();
-    });
-});
-
-document.querySelectorAll('.product-card').forEach(card => {
-    const addToCartButton = card.querySelector('.add-to-cart');
-    if (addToCartButton) {
-        addToCartButton.addEventListener('click', addToCart);
     }
+
+    async function loadProducts() {
+        try {
+            const response = await fetch('http://localhost:3001/products');
+            products = await response.json();
+            filteredProducts = [...products];
+            renderProducts();
+            updateCartCount();
+        } catch (error) {
+            console.error('Error loading products:', error);
+            productsContainer.innerHTML = '<p class="text-danger text-center py-5">Failed to load products. Please try again later.</p>';
+        }
+    }
+
+    searchInput.addEventListener('input', handleSearch);
+    sortSelect.addEventListener('change', handleSort);
+    
+    loadProducts();
 });
